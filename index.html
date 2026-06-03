@@ -21,7 +21,7 @@ text-align:center;
 margin-bottom:15px;
 }
 
-#status,#total,#contadores{
+#status,#contadores{
 background:#222;
 padding:12px;
 border-radius:10px;
@@ -33,6 +33,12 @@ text-align:center;
 font-size:22px;
 font-weight:bold;
 background:#1d4f1d;
+padding:12px;
+border-radius:10px;
+margin-bottom:12px;
+text-align:center;
+cursor:pointer;
+user-select:none;
 }
 
 #contadores{
@@ -71,10 +77,9 @@ transform:scale(0.97);
 Pronto
 </div>
 
-<div id="total">
+<div id="total" onclick="resetDia()">
 Hoje: 0€
 </div>
-
 
 <div class="grid">
 
@@ -137,26 +142,18 @@ Hoje: 0€
 
 const url="https://script.google.com/macros/s/AKfycbwHHKI-Nc1K9QJPmQT0Hzt9yNk9Wj8eaET2dv5VT322vcImtvwq9JrwrkEpYgPhc2edWA/exec";
 
-let total=
-Number(localStorage.getItem("total"))||0;
+let total =
+Number(localStorage.getItem("total")) || 0;
 
-let contadores=
-JSON.parse(
-localStorage.getItem("contadores")
-)||{};
+let contadores =
+JSON.parse(localStorage.getItem("contadores")) || {};
 
-let historico=
-JSON.parse(
-localStorage.getItem("historico")
-)||[];
-
+let historico =
+JSON.parse(localStorage.getItem("historico")) || [];
 
 function guardar(){
 
-localStorage.setItem(
-"total",
-total
-);
+localStorage.setItem("total",total);
 
 localStorage.setItem(
 "contadores",
@@ -170,52 +167,35 @@ JSON.stringify(historico)
 
 }
 
-
 function atualizar(){
 
-document.getElementById(
-"total"
-).innerText=
-"Hoje: "+total+"€";
-
+document.getElementById("total").innerText =
+"Hoje: " + total + "€";
 
 let texto="<b>📊 Contagem hoje</b><br><br>";
 
 for(let item in contadores){
 
-texto +=
-item+
-": "+
-contadores[item]+
-"<br>";
+texto += item + ": " + contadores[item] + "<br>";
 
 }
 
 if(Object.keys(contadores).length==0){
 
-texto+="Sem registos";
+texto += "Sem registos";
 
 }
 
-document.getElementById(
-"contadores"
-).innerHTML=
+document.getElementById("contadores").innerHTML =
 texto;
 
 guardar();
 
 }
 
+async function send(servico,valor){
 
-
-async function send(
-servico,
-valor
-){
-
-document.getElementById(
-"status"
-).innerText=
+document.getElementById("status").innerText =
 "⏳ A registar...";
 
 await fetch(
@@ -231,8 +211,8 @@ mode:"no-cors"
 
 total += valor;
 
-contadores[servico]=
-(contadores[servico]||0)+1;
+contadores[servico] =
+(contadores[servico] || 0) + 1;
 
 historico.push({
 servico,
@@ -241,59 +221,57 @@ valor
 
 atualizar();
 
-document.getElementById(
-"status"
-).innerText=
+document.getElementById("status").innerText =
 "✅ Registado";
 
 }
-
-
 
 function desfazer(){
 
 if(historico.length==0){
 
-document.getElementById(
-"status"
-).innerText=
+document.getElementById("status").innerText =
 "Sem histórico";
 
 return;
 
 }
 
-let ultimo=
-historico.pop();
+let ultimo = historico.pop();
 
-total -=
-ultimo.valor;
+total -= ultimo.valor;
 
-contadores[
-ultimo.servico
-]--;
+contadores[ultimo.servico]--;
 
-if(
-contadores[
-ultimo.servico
-]<=0
-){
+if(contadores[ultimo.servico] <= 0){
 
-delete contadores[
-ultimo.servico
-];
+delete contadores[ultimo.servico];
 
 }
 
 atualizar();
 
-document.getElementById(
-"status"
-).innerText=
+document.getElementById("status").innerText =
 "↩️ Último removido";
 
 }
 
+function resetDia(){
+
+if(!confirm("Resetar totais e contagens de hoje?")){
+return;
+}
+
+total = 0;
+contadores = {};
+historico = [];
+
+atualizar();
+
+document.getElementById("status").innerText =
+"🔄 Totais reiniciados";
+
+}
 
 atualizar();
 
